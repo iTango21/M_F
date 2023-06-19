@@ -98,6 +98,9 @@ while current_month <= stop:
                 # Если найдено несколько совпадений, берем первое
                 if len(matches) > 0:
                     date_ = matches[0]
+                    date_obj = datetime.strptime(date_, '%d.%m.%Y')
+                    date_ = date_obj.strftime('%Y-%m-%d')
+
             else:
                 matches = re.findall(r'[\d\.]+', str(d__))
 
