@@ -8,23 +8,6 @@ import re
 # import pandas as pd
 
 import csv
-# Чтение данных из файла
-with open('___!!!.json', 'r') as file:
-    data = json.load(file)
-
-# Открываем CSV-файл для записи
-with open('___!!!.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
-
-    # Записываем заголовки столбцов
-    writer.writerow(['Year-Month', 'Date', 'Values'])
-
-    # Записываем данные
-    for year_month, dates in data.items():
-        for date, values in dates.items():
-            for value in values:
-                writer.writerow([year_month, date, value])
-breakpoint()
 
 
 from datetime import datetime, timedelta
@@ -126,55 +109,12 @@ while current_month <= stop:
                     item = matches[0]
                     day_data[date_].append(item)
 
-
-    # Добавляем события в список для текущего месяца (здесь может быть ваш код для анализа событий)
-    # events_by_month[key].append('Some event')
-
     # Переходим к следующему месяцу
     current_month = current_month + timedelta(days=32)
     current_month = current_month.replace(day=1)
 
 
-# Выводим результаты анализа
-# for month, events in events_by_month.items():
-#     print(month)
-#     print(events)
-#     print('---')
-
 
 
 with open(f'___!!!.json', 'w+', encoding='utf-8') as file:
     json.dump(data__, file, indent=4, ensure_ascii=False)
-
-# df = pd.read_json(r'___!!!.json')
-# df.to_csv(r'___!!!.csv', index=None)
-
-# # Создание CSV-файла
-# with open("___!!!.csv", "w", newline='') as csv_file:
-#     writer = csv.writer(csv_file)
-#     writer.writerow(["Month and Year", "Date", "Value"])
-#
-#     for month_year, day_data in data.items():
-#         for date, values in day_data.items():
-#             for value in values:
-#                 writer.writerow([month_year, date, value])
-
-# # Создание CSV-файла
-# with open("data.csv", "w", newline='') as csv_file:
-#     writer = csv.writer(csv_file)
-#     writer.writerow(["Month and Year", "Date", "Value"])
-#
-#     for month_year, day_data in data.items():
-#         for date, values in day_data.items():
-#             for value in values:
-#                 writer.writerow([month_year, date, value])
-
-# # Создание CSV-файла
-# with open("data.csv", "w", newline='') as csv_file:
-#     writer = csv.writer(csv_file)
-#     writer.writerow(["Месяц и год", "Дата", "Значение"])
-#
-#     for month_year, day_data in data.items():
-#         for date, values in day_data.items():
-#             for value in values:
-#                 writer.writerow([month_year, date, value])
