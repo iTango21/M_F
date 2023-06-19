@@ -58,9 +58,7 @@ while current_month <= stop:
     key = current_month.strftime('%Y-%m')
     key_ = current_month.strftime('%m.%Y')
 
-    month_year = key
-    data__[month_year] = {}
-    day_data = data__[month_year]
+    year_month = key
 
     print(key_)
     time.sleep(1)
@@ -83,11 +81,12 @@ while current_month <= stop:
 
     # tmp_ = '03_mart'
     arr_ = []
+    records = {}
 
     for r__ in tr_:
         td_ = r__.find_all('td')
 
-        arr_items = []
+
 
         for i, d__ in enumerate(td_):
             if i == 0:
@@ -99,40 +98,29 @@ while current_month <= stop:
                 # Если найдено несколько совпадений, берем первое
                 if len(matches) > 0:
                     date_ = matches[0]
-                    day_data[date_] = []
-
-
             else:
                 matches = re.findall(r'[\d\.]+', str(d__))
 
                 if len(matches) > 0:
                     item = matches[0]
-                    day_data[date_].append(item)
+                    timestamp = f"{date_} {i - 1:02d}:00:00"
+                    records[timestamp] = item
+
+        data__[year_month] = records
 
     # Переходим к следующему месяцу
     current_month = current_month + timedelta(days=32)
     current_month = current_month.replace(day=1)
 
 
-
-
 with open(f'___!!!.json', 'w+', encoding='utf-8') as file:
     json.dump(data__, file, indent=4, ensure_ascii=False)
 
-# Чтение данных из файла
-with open('___!!!.json', 'r') as file:
-    data = json.load(file)
+# Создание CSV-файла
+with open("___!!!.csv", "w", newline="", encoding='utf-8') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Year-Month", "Date-Time", "Values"])
 
-# Открываем CSV-файл для записи
-with open('___!!!.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
-
-    # Записываем заголовки столбцов
-    writer.writerow(['Year-Month', 'Date', 'Values'])
-
-    # Записываем данные
-    for year_month, dates in data.items():
-        for date, values in dates.items():
-            for value in values:
-                writer.writerow([year_month, date, value])
-breakpoint()
+    for month, records in data__.items():
+        for timestamp, value in records.items():
+            writer.writerow([month, timestamp, value])
