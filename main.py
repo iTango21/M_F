@@ -118,3 +118,21 @@ while current_month <= stop:
 
 with open(f'___!!!.json', 'w+', encoding='utf-8') as file:
     json.dump(data__, file, indent=4, ensure_ascii=False)
+
+# Чтение данных из файла
+with open('___!!!.json', 'r') as file:
+    data = json.load(file)
+
+# Открываем CSV-файл для записи
+with open('___!!!.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',')
+
+    # Записываем заголовки столбцов
+    writer.writerow(['Year-Month', 'Date', 'Values'])
+
+    # Записываем данные
+    for year_month, dates in data.items():
+        for date, values in dates.items():
+            for value in values:
+                writer.writerow([year_month, date, value])
+breakpoint()
