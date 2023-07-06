@@ -45,4 +45,4 @@ if missing_dates:
     for date in missing_dates:
         print(date)
 else:
-    print('All dates are present in the data.')
+    print('\nAll dates are present in the data.')

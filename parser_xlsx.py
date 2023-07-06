@@ -10,6 +10,7 @@ from transliterate import translit
 # Замените на свой путь!
 folder_path = 'D:\\_work_2023_\\programming\\Python\\0 _ freelance _ 0\\upw\\M_F\\'
 
+
 file_list = os.listdir(folder_path)
 
 xlsx_files = [file for file in file_list if file.endswith('.xlsx')]
@@ -80,7 +81,7 @@ for sheet_name, sheet_data in data.items():
 
     with open(file_name_json, 'w', encoding='utf-8') as file:
         json.dump(sheet_data, file, ensure_ascii=False, indent=4)
-        print(f"JSON-файл: {file_name_json} >>> успешно создан.")
+        print(f"JSON-файл: {file_name_json} >>> successfully created.")
 
     headers = list(sheet_data[0].keys())
 
