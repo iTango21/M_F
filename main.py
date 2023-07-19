@@ -1,129 +1,213 @@
-import requests
-import json
-import time
+import os
+import re
+import datetime
+from datetime import datetime as dt, timedelta
 
+import pandas as pd
+import csv
+import openpyxl
+from transliterate import translit
+
+import requests
 from bs4 import BeautifulSoup
 
-import re
-# import pandas as pd
+from fake_useragent import UserAgent
 
-import csv
+ua = UserAgent()
+ua_ = ua.random
 
+# Replace with your path!
+folder_path = 'D:\\_work_2023_\\programming\\Python\\0 _ freelance _ 0\\upw\\M_F\\'
 
-from datetime import datetime, timedelta
+date_start = '29.9.2022'
+date_stop = '3.10.2022'
 
-date_start = '01.03.2022'
-date_stop = '31.05.2023'
-
-# Преобразуем строки с датами в объекты datetime
-start = datetime.strptime(date_start, '%d.%m.%Y')
-stop = datetime.strptime(date_stop, '%d.%m.%Y')
-
-# Создаем словарь, где ключами будут год и месяц, а значениями - события
-events_by_month = {}
-
-cookies = {
-    '_gid': 'GA1.3.785657314.1687156607',
-    'PHPSESSID': '5d78539gum179dkmhhq8vqgv07',
-    '_gat_gtag_UA_144367606_1': '1',
-    '_ga_SX032CTY0J': 'GS1.1.1687158699.2.1.1687158769.0.0.0',
-    '_ga': 'GA1.1.484492776.1687156607',
-}
-
-headers = {
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
-    'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,uk;q=0.6,vi;q=0.5,pt;q=0.4,ka;q=0.3',
-    'Connection': 'keep-alive',
-    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-    # 'Cookie': '_gid=GA1.3.785657314.1687156607; PHPSESSID=5d78539gum179dkmhhq8vqgv07; _gat_gtag_UA_144367606_1=1; _ga_SX032CTY0J=GS1.1.1687158699.2.1.1687158769.0.0.0; _ga=GA1.1.484492776.1687156607',
-    'Origin': 'https://www.oree.com.ua',
-    'Referer': 'https://www.oree.com.ua/index.php/pricectr',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-    'X-Requested-With': 'XMLHttpRequest',
-    'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"',
-}
+start = dt.strptime(date_start, '%d.%m.%Y').date()
+stop = dt.strptime(date_stop, '%d.%m.%Y').date()
 
 
-data__ = {}
+def get_ua_data(start_time, end_time, folder_path):
 
-# Перебираем все месяца в заданном диапазоне
-current_month = start
-while current_month <= stop:
-    # Формируем ключ для текущего месяца (год и месяц в формате YYYY-MM)
-    key = current_month.strftime('%Y-%m')
-    key_ = current_month.strftime('%m.%Y')
-
-    year_month = key
-
-    print(key_)
-    time.sleep(1)
-
-    # Если ключа еще нет в словаре, добавляем его с пустым списком событий
-    if key not in events_by_month:
-        events_by_month[key] = []
-
-    data = {
-        'date': f'{key_}',
-        'market': 'DAM',
-        'zone': 'IPS',
+    headers = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "User-Agent": f'{ua}'
     }
 
-    response = requests.post('https://www.oree.com.ua/index.php/pricectr/data_view', cookies=cookies, headers=headers,
-                             data=data)
+    cookies = {
+        'pll_language': 'uk',
+        '_gid': 'GA1.2.1810776591.1689236007',
+        'TS01a65230': '01217fbce07a931ba059c076242ed957f0b719c0bdd95f7bc8555e73a9b527879cbfbf22e053a0de913cf0a20899e44d99709e8ac0',
+        'TSca37abee027': '08124a4360ab2000cd41a7453b871bbfb1717fa0c8155bf6c11934aa88f4a0bf48dffd1181d1eea00884e23b0b113000495a16896685023923956420bc794a9fff40e74f807386da9950f2b4449a59449a99e781868d5607d2e39c8132bafc19',
+        '__cf_bm': '_dquT0kH4_ks50srEnbFPbRCUe3v6biwltfQ3V3o_Ho-1689237030-0-Ae28YhD80+KqpkNj7W+rknjLkQhEX4r+shnY/axAJlTxaFNPIwl7V4EyPrpC8Cko/4aXN7P3KKx0oFe3eNw8HYM=',
+        '_ga_C1EFLWK2ZZ': 'GS1.1.1689236006.2.1.1689237031.0.0.0',
+        '_ga': 'GA1.1.2093891621.1687346240',
+    }
 
+    print('start...')
+
+    url = 'https://ua.energy/uchasnikam_rinku/auktsiony/rezultaty-auktsioniv-z-dostupu-do-mizhderzhavnyh-peretyniv/'
+
+    response = requests.get(url=url, cookies=cookies, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
-    tr_ = soup.find('tbody').find_all('tr')
+    cq_tabcontent = soup.find_all('div', class_='cq-tabcontent style2')
 
-    # tmp_ = '03_mart'
     arr_ = []
-    records = {}
+    formatted_date = ''
 
-    for r__ in tr_:
-        td_ = r__.find_all('td')
+    date_pattern = r'\d{2}\.\d{2}\.\d{4}'
 
+    for item in cq_tabcontent:
+        aaa = item.find_all('a')
+        for url__ in aaa:
+            url_ = url__.get('href')
 
+            pattern = r'https?://[^\s]+\.xlsx'
 
-        for i, d__ in enumerate(td_):
-            if i == 0:
-                # string = '<td>\n 01.06.2023 &lt;\/td&gt;\n </td>'
+            if re.findall(pattern, url_):
+                arr_.append(url_)
 
-                # Находим все последовательности цифр и точек, расположенные между пробелами или символами переноса строки
-                matches = re.findall(r'[\d\.]+', str(d__))
+                match = re.search(date_pattern, url_)
+                if match:
+                    date = match.group(0)
+                    date = date.replace('-', '')
 
-                # Если найдено несколько совпадений, берем первое
-                if len(matches) > 0:
-                    date_ = matches[0]
-                    date_obj = datetime.strptime(date_, '%d.%m.%Y')
-                    date_ = date_obj.strftime('%Y-%m-%d')
+                    date_object = dt.strptime(date, "%d.%m.%Y")
+                    formatted_date = date_object.strftime("%Y%m%d")
 
+                    file_date = dt.strptime(formatted_date, "%Y%m%d").date()
+
+                    if start <= file_date <= stop:
+                        response = requests.get(url_, headers=headers)
+
+                        filename = f'{formatted_date}.xlsx'
+
+                        with open(filename, "wb") as file:
+                            file.write(response.content)
+
+                        print(f"File: {filename} >>> downloaded successfully.")
+
+    file_list = os.listdir(folder_path)
+
+    xlsx_files = [file for file in file_list if file.endswith('.xlsx')]
+
+    # Sort files by name
+    sorted_files = sorted(xlsx_files)
+
+    # Function to extract date from filename
+    def extract_date(filename):
+        return pd.to_datetime(filename.split('.')[0], format='%Y%m%d')
+
+    # Sort files by date using function extract_date
+    sorted_files = sorted(sorted_files, key=extract_date)
+
+    data = {}  # Dictionary to store data from all files
+
+    # Reading Files Sequentially
+    for file in sorted_files:
+        file_path = os.path.join(folder_path, file)
+        file_name = os.path.basename(file_path)
+
+        date_match = re.search(r'\d{8}', file_name)
+        if date_match:
+            date_str = date_match.group(0)
+            date_obj = datetime.datetime.strptime(date_str, "%Y%m%d")
+            formatted_date = date_obj.strftime("%Y-%m-%d")
+        else:
+            print("Date not found in filename!")
+
+        workbook = openpyxl.load_workbook(file_path)
+
+        for sheet in workbook.sheetnames:
+            current_sheet = workbook[sheet]
+
+            sheet_name = translit(sheet.replace('ї', 'и'), language_code='ru', reversed=True)
+            sheet = sheet_name.replace("'", "").replace(">>", "_")
+
+            if sheet not in data:
+                data[sheet] = []
+
+            if "SKASOVANO" in sheet:
+                print(">>>>> 'SKASOVANO' <<<<< !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             else:
-                matches = re.findall(r'[\d\.]+', str(d__))
+                sheet_data = []
 
-                if len(matches) > 0:
-                    item = matches[0]
-                    timestamp = f"{date_} {i - 1:02d}:00:00"
-                    records[timestamp] = item
+                for row in range(4, 28):
+                    cell_B = current_sheet['B' + str(row)].value
+                    cell_C = current_sheet['C' + str(row)].value
+                    cell_D = current_sheet['D' + str(row)].value
+                    cell_E = current_sheet['E' + str(row)].value
 
-        data__[year_month] = records
+                    ts = f"{int(cell_B) - 1:02d}:00:00"
+                    hour_ = f'{formatted_date} {ts}'
 
-    # Переходим к следующему месяцу
-    current_month = current_month + timedelta(days=32)
-    current_month = current_month.replace(day=1)
+                    sheet_data.append({
+                        'timestamp': hour_,
+                        'C': cell_C,
+                        'D': cell_D,
+                        'E': cell_E
+                    })
+
+                data[sheet].extend(sheet_data)
+
+    csv_files = []
+
+    # Saving data to a file CSV
+    for sheet_name, sheet_data in data.items():
+        # file_name_json = f'{sheet_name}.json'
+        file_name_csv = f'{sheet_name}.csv'
+
+        try:
+            headers = list(sheet_data[0].keys())
+
+            csv_files.append(sheet_name)
+
+            with open(file_name_csv, 'w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=headers)
+                writer.writeheader()
+                writer.writerows(sheet_data)
+
+            # print(f"CSV-файл: '{file_name_csv}' >>> successfully created.")
+        except:
+            pass
+
+    output_file = 'join_csv.csv'
+
+    columns = ['timestamp']
+    for file_ in csv_files:
+        file_name = f'{file_}.csv'
+        columns.append(file_name[:-4] + ' PX')
+        columns.append(file_name[:-4] + ' NTC')
+        columns.append(file_name[:-4] + ' AC')
+
+    data = {}
+
+    for file_ in csv_files:
+        file_name = f'{file_}.csv'
+        with open(file_name, 'r') as file:
+            reader = csv.reader(file)
+            next(reader)  # Header Skip
+            for row in reader:
+                timestamp = row[0]
+                if timestamp not in data:
+                    # If the key is missing, create a new entry in the dictionary
+                    data[timestamp] = {}
+                # Fill in data for each column
+                data[timestamp][file_name[:-4] + ' PX'] = row[1]
+                data[timestamp][file_name[:-4] + ' NTC'] = row[2]
+                data[timestamp][file_name[:-4] + ' AC'] = row[3]
+
+    with open(output_file, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(columns)  # Title entry
+        for timestamp in sorted(data.keys()):
+            row = [timestamp]
+            for column in columns[1:]:
+                if column in data[timestamp]:
+                    row.append(data[timestamp][column])
+                else:
+                    row.append(0)
+            writer.writerow(row)
 
 
-with open(f'___!!!.json', 'w+', encoding='utf-8') as file:
-    json.dump(data__, file, indent=4, ensure_ascii=False)
-
-# Создание CSV-файла
-with open("___!!!.csv", "w", newline="", encoding='utf-8') as file:
-    writer = csv.writer(file)
-    writer.writerow(["Year-Month", "Date-Time", "Values"])
-
-    for month, records in data__.items():
-        for timestamp, value in records.items():
-            writer.writerow([month, timestamp, value])
+if __name__ == "__main__":
+    get_ua_data(start, stop, folder_path)
