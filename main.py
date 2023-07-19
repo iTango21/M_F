@@ -19,6 +19,8 @@ ua_ = ua.random
 # Replace with your path!
 folder_path = 'D:\\_work_2023_\\programming\\Python\\0 _ freelance _ 0\\upw\\M_F\\'
 
+output_file = 'join_csv.csv'
+
 date_start = '29.9.2022'
 date_stop = '3.10.2022'
 
@@ -169,8 +171,6 @@ def get_ua_data(start_time, end_time, folder_path):
             # print(f"CSV-файл: '{file_name_csv}' >>> successfully created.")
         except:
             pass
-
-    output_file = 'join_csv.csv'
 
     columns = ['timestamp']
     for file_ in csv_files:
